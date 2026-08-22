@@ -1,5 +1,5 @@
 # OMX-AI_ROBOTIS
-# OMX-AI Orin Nano Super 초기 설정 (2025-08-15)
+# # chaapter 1.  OMX-AI Orin Nano Super 초기 설정 (2025-08-15)
 
 ## 개요
 
@@ -348,3 +348,101 @@ ID 16 → 6 (그리퍼, 모델 XL330-M077)
    - 모터가 잡히면 Torque Enable + Goal Position으로 직접 구동 테스트
 5. 위 4단계에서 모터가 정상 작동하면 → 소프트웨어 설정 문제 (ID, 포트 매핑 등)
 6. 4단계에서도 모터가 하나도 안 잡히면 → 배선/전원 문제, 조립 재점검 필요
+
+
+# chaapter 2.  LeRobot 개발환경 세팅 정리 (노트북 x86_64)
+
+## 0. 기본 개념 정리
+- `~` 는 항상 홈 디렉토리(`/home/orin`)를 가리키는 절대경로 축약어. 어디에 있든 `rm -rf ~/miniconda3` 는 항상 홈의 miniconda3를 삭제함.
+- 경로 헷갈릴 때: `pwd`(현재 위치), `ls ~`(홈 내용 확인)
+
+---
+
+## 1. Miniconda 설치
+
+### 주의: 아키텍처 확인 필수
+Jetson Orin(ARM64)용 설치파일(`Miniconda3-latest-Linux-aarch64.sh`)을 x86_64 노트북에 실행하면 에러 발생:
+```
+aarch64-binfmt-P: Could not open '/lib/ld-linux-aarch64.so.1': No such file or directory
+```
+→ 노트북은 x86_64 아키텍처이므로 x86_64용 설치파일을 받아야 함.
+
+### 잘못 설치된 것 정리
+```bash
+rm -rf ~/miniconda3
+```
+
+### 올바른 설치파일 다운로드 및 설치
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+chmod +x Miniconda3-latest-Linux-x86_64.sh
+./Miniconda3-latest-Linux-x86_64.sh
+```
+- 라이센스 동의: `yes` 입력 (한글 자판 상태 확인!)
+- 설치 경로: 기본값(`/home/orin/miniconda3`) 사용 시 Enter
+
+### conda 초기화 (셸에 인식 안 될 경우)
+```bash
+~/miniconda3/bin/conda init bash
+source ~/.bashrc
+```
+
+---
+
+## 2. conda 이용약관(ToS) 동의
+최근 conda 정책상 기본 채널 사용 전 ToS 동의 필요 (아키텍처 무관, 공통 절차):
+```bash
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+```
+
+---
+
+## 3. LeRobot용 Conda 가상환경 생성
+```bash
+conda create -y -n lerobot python=3.10
+conda activate lerobot
+python --version   # Python 3.10.20 확인
+```
+
+---
+
+## 4. ffmpeg 설치
+```bash
+conda install -c conda-forge ffmpeg=6.1.1 -y
+```
+- 설치 중 `conda-pypi` 관련 WARNING은 무시해도 됨.
+
+---
+
+## 5. Git 설치 (사전 설치 안 되어 있던 경우)
+```bash
+sudo apt update
+sudo apt install git -y
+git --version
+```
+- `git clone`은 홈 디렉토리 내 작업이면 `sudo` 불필요.
+
+---
+
+## 6. LeRobot 저장소 클론
+```bash
+git clone https://github.com/ROBOTIS-GIT/lerobot.git
+cd lerobot
+```
+
+---
+
+## 7. 패키지 설치
+```bash
+pip install -e .
+pip install -e ".[dynamixel]"
+```
+- 이 단계는 순수 소프트웨어(파이썬 패키지) 설치 과정으로, **로봇/다이나믹셀 하드웨어 연결 불필요**.
+- 실제 포트(`/dev/ttyUSB0` 등) 연결 및 통신 테스트는 이후 단계에서 진행.
+
+---
+
+## 다음 할 일 (TODO)
+- [ ] 하드웨어(로봇, 다이나믹셀) 연결 후 포트 인식 테스트
+- [ ] LeRobot 예제 스크립트 실행 확인
