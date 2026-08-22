@@ -1,5 +1,5 @@
 # OMX-AI_ROBOTIS
-# # chaapter 1.  OMX-AI Orin Nano Super 초기 설정 (2025-08-15)
+# # chapter 1.  OMX-AI Orin Nano Super 초기 설정 (2025-08-15)
 
 ## 개요
 
